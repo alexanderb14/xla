@@ -7173,3 +7173,42 @@ xla_cc_test(
         "@tsl//tsl/platform:test",
     ]),
 )
+
+xla_cc_binary(
+    name = "xla_aot_polybench",
+    srcs = ["xla_aot_polybench.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":cpu_plugin",
+        ":platform_util",
+        ":compiler",
+        "@llvm-project//mlir:ArithDialect",
+        "@llvm-project//mlir:FuncDialect",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:Parser",
+        "//xla:executable_run_options",
+        "//xla:literal_util",
+        "//xla/client:client_library",
+        "//xla/client:local_client",
+        "//xla:debug_options_flags",
+        "//xla:statusor",
+        "//xla/mlir_hlo",
+        "//xla/pjrt:mlir_to_hlo",
+        "//xla/service/cpu:cpu_compiler",
+        "//xla/service/cpu:cpu_executable",
+        "@tsl//tsl/platform:env",
+        "@tsl//tsl/platform:platform_port",
+        "@tsl//tsl/platform:protobuf",
+        "@tsl//tsl/platform:statusor",
+        "@tsl//tsl/util:command_line_flags",
+        "@stablehlo//:register",
+        "//xla:autotune_results_proto_cc",
+
+        "@tsl//tsl/platform:errors",
+        "@tsl//tsl/platform:path",
+    ] + if_cuda_is_configured([
+        "//xla/service/gpu:executable_proto_cc",
+        "//xla/service/gpu:gpu_compiler",
+        "//xla/service/gpu:nvptx_compiler_impl",
+    ]),
+)
