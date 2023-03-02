@@ -7179,9 +7179,6 @@ xla_cc_binary(
     srcs = ["xla_aot_polybench.cc"],
     visibility = ["//visibility:public"],
     deps = [
-        ":cpu_plugin",
-        ":platform_util",
-        ":compiler",
         "@llvm-project//mlir:ArithDialect",
         "@llvm-project//mlir:FuncDialect",
         "@llvm-project//mlir:IR",
