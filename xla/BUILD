@@ -20,6 +20,7 @@ refresh_compile_commands(
     # For example, specify a dict of targets and any flags required to build.
     targets = {
       "xla/examples/axpy:stablehlo_compile_test": "--nocheck_visibility",
+      "xla/service:xla_aot_polybench": "--nocheck_visibility",
     },
     # No need to add flags already in .bazelrc. They're automatically picked up.
     # If you don't need flags, a list of targets is also okay, as is a single target string.

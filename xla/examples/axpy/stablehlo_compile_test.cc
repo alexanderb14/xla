@@ -29,6 +29,7 @@ limitations under the License.
 #include "xla/client/local_client.h"
 #include "xla/literal_util.h"
 #include "xla/pjrt/local_device_state.h"
+#include "xla/pjrt/pjrt_client.h"
 #include "xla/pjrt/pjrt_stream_executor_client.h"
 #include "xla/service/platform_util.h"
 #include "xla/tests/literal_test_util.h"
@@ -79,8 +80,9 @@ TEST(StableHloAxpyTest, LoadAndRunCpuExecutable) {
       /*gpu_run_options=*/nullptr);
 
   // Read StableHLO program to string.
-  std::string program_path = tsl::io::JoinPath(
-      tsl::testing::XlaSrcRoot(), "examples", "axpy", "stablehlo_axpy.mlir");
+  //std::string program_path = tsl::io::JoinPath(
+  //    tsl::testing::XlaSrcRoot(), "examples", "axpy", "stablehlo_axpy.mlir");
+  std::string program_path = "/tmp/xla_compile/synth_and_prep_fn.mlir";
   std::string program_string;
 
   TF_ASSERT_OK(tsl::ReadFileToString(tsl::Env::Default(), program_path,
@@ -105,43 +107,62 @@ TEST(StableHloAxpyTest, LoadAndRunCpuExecutable) {
                           pjrt_se_client.Compile(*program, CompileOptions{}));
 
   // Create inputs to our computation.
-  auto alpha_literal = xla::LiteralUtil::CreateR0<float>(3.14f);
-  auto x_literal = xla::LiteralUtil::CreateR1<float>({1.0f, 2.0f, 3.0f, 4.0f});
-  auto y_literal =
-      xla::LiteralUtil::CreateR1<float>({10.5f, 20.5f, 30.5f, 40.5f});
+  auto x_a = xla::Array3D<double>(250, 220, 270);
+  for (int i = 0; i < x_a.dim(0); ++i) {
+    for (int j = 0; j < x_a.dim(1); ++j) {
+      for (int k = 0; k < x_a.dim(2); ++k) {
+        x_a(i, j, k) = (double)(1) / i;
+      }
+    }
+  }
+  auto x_literal = xla::LiteralUtil::CreateR3FromArray3D<double>(
+      x_a);
 
-  std::cerr << "Computation inputs:" << std::endl;
-  std::cerr << "\talpha:" << alpha_literal << std::endl;
-  std::cerr << "\tx:" << x_literal << std::endl;
-  std::cerr << "\ty:" << y_literal << std::endl;
+  auto y_a = xla::Array2D<double>(270, 270);
+  for (int i = 0; i < y_a.dim(0); ++i) {
+    for (int j = 0; j < y_a.dim(1); ++j) {
+      y_a(i, j) = (double) 1;
+    }
+  }
+  auto y_literal = xla::LiteralUtil::CreateR2FromArray2D<double>(
+      y_a);
 
   // Get the host device.
   PjRtDevice* cpu = pjrt_se_client.devices()[0];
 
   // Transfer our literals to buffers. If we were using a GPU, these buffers
   // would correspond to device memory.
-  TF_ASSERT_OK_AND_ASSIGN(
-      std::unique_ptr<PjRtBuffer> alpha,
-      pjrt_se_client.BufferFromHostLiteral(alpha_literal, cpu));
   TF_ASSERT_OK_AND_ASSIGN(std::unique_ptr<PjRtBuffer> x,
                           pjrt_se_client.BufferFromHostLiteral(x_literal, cpu));
   TF_ASSERT_OK_AND_ASSIGN(std::unique_ptr<PjRtBuffer> y,
                           pjrt_se_client.BufferFromHostLiteral(y_literal, cpu));
 
+  // Block until the buffers are ready.
+  TF_ASSERT_OK(x->BlockHostUntilReady());
+  TF_ASSERT_OK(y->BlockHostUntilReady());
+
+  // Time the execution of the computation.
+  absl::Time start = absl::Now();
+
   // Do our computation.
+  ::xla::ExecuteOptions options;
+  options.execution_mode = ::xla::ExecuteOptions::ExecutionMode::kSynchronous;
   TF_ASSERT_OK_AND_ASSIGN(
       std::vector<std::vector<std::unique_ptr<PjRtBuffer>>> axpy_result,
-      executable->Execute({{alpha.get(), x.get(), y.get()}}, /*options=*/{}));
+      executable->Execute({{x.get(), y.get()}}, options));
 
-  // Convert result buffer back to literal.
-  TF_ASSERT_OK_AND_ASSIGN(std::shared_ptr<Literal> axpy_result_literal,
-                          axpy_result[0][0]->ToLiteralSync());
+  auto buffer = axpy_result[0][0].get();
+  auto status = buffer->BlockHostUntilReady();
 
-  // Check to make sure that our results match what we expect.
-  xla::LiteralTestUtil::ExpectR1Near<float>({13.64f, 26.78f, 39.92f, 53.06f},
-                                            *axpy_result_literal,
-                                            xla::ErrorSpec(0.01f));
-  std::cerr << "Computation output: " << *axpy_result_literal << std::endl;
+  // Time the execution of the computation.
+  absl::Time end = absl::Now();
+  std::cerr << "Execution time: " << absl::ToDoubleSeconds(end - start) << "s\n";
+
+  //// Convert result buffer back to literal.
+  //TF_ASSERT_OK_AND_ASSIGN(std::shared_ptr<Literal> axpy_result_literal,
+  //                        axpy_result[0][0]->ToLiteralSync());
+  //std::cerr << "Computation output: " << *axpy_result_literal << std::endl;
+
 }
 
 }  // namespace
