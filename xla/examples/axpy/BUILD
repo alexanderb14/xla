@@ -5,12 +5,22 @@ load(
     "xla_py_proto_library",
     "xla_py_test_deps",
 )
+load("@tsl//tsl/platform:rules_cc.bzl", "cc_library")
+
+cc_library(
+    name = "polybench_lib",
+    srcs = ["polybench.cc"],
+    hdrs = ["polybench.h",
+            "doitgen.h"],
+    visibility = ["//visibility:public"],
+)
 
 xla_cc_binary(
     name = "stablehlo_compile_test",
     srcs = ["stablehlo_compile_test.cc"],
-    data = ["stablehlo_axpy.mlir"],
+    visibility = ["//visibility:public"],
     deps = [
+        ":polybench_lib",
         "//xla:literal_util",
         "//xla/client:client_library",
         "//xla/client:local_client",
