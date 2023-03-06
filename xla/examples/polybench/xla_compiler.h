@@ -5,6 +5,12 @@
 #include <memory>
 #include <string>
 
+enum cmd_option {
+  option_time,
+  option_validate
+};
+cmd_option parseOption(int argc, char** argv);
+
 std::shared_ptr<xla::PjRtStreamExecutorClient> buildJITClient();
 std::unique_ptr<xla::PjRtLoadedExecutable> buildExecutable(
     std::shared_ptr<xla::PjRtStreamExecutorClient> client, std::string program_path);

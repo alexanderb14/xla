@@ -1,6 +1,6 @@
 #define POLYBENCH_TIME
 #define EXTRALARGE_DATASET
-//#define POLYBENCH_DUMP_ARRAYS
+#define POLYBENCH_DUMP_ARRAYS
 
 /**
  * This version is stamped on May 10, 2016

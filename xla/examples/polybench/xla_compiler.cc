@@ -21,6 +21,19 @@
 
 using namespace xla;
 
+cmd_option parseOption(int argc, char** argv) {
+  if (argc == 1) {
+    return option_time;
+  }
+  if (argc == 2) {
+    if (strcmp(argv[1], "--validate") == 0) {
+      return option_validate;
+    }
+  }
+  std::cerr << "Usage: " << argv[0] << " [--validate]" << std::endl;
+  exit(1);
+}
+
 std::shared_ptr<PjRtStreamExecutorClient> buildJITClient() {
   // Setup client
   LocalClient* local_client = xla::ClientLibrary::LocalClientOrDie();

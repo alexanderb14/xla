@@ -74,6 +74,8 @@ void kernel_doitgen(int nr, int nq, int np,
 
 int main(int argc, char** argv)
 {
+  cmd_option option = parseOption(argc, argv);
+
   /* Retrieve problem size. */
   int nr = NR;
   int nq = NQ;
@@ -93,7 +95,7 @@ int main(int argc, char** argv)
   // - Build executable
   auto client = buildJITClient();
   auto executable = buildExecutable(
-      client, "/devel/git_3rd/xla/xla/examples/axpy/doitgen.mlir");
+      client, "/devel/git_3rd/xla/xla/examples/polybench/doitgen.mlir");
 
   // - Create inputs.
   auto x_a = xla::Array3D<double>(NR, NQ, NP);
@@ -110,7 +112,7 @@ int main(int argc, char** argv)
   auto y = buildBuffer2D(client, y_a);
 
   /* Start timer. */
-  polybench_start_instruments;
+  polybench_timer_start();
 
   ::xla::ExecuteOptions options;
   options.execution_mode = ::xla::ExecuteOptions::ExecutionMode::kSynchronous;
@@ -123,8 +125,9 @@ int main(int argc, char** argv)
   auto status = buffer->BlockHostUntilReady();
 
   /* Stop and print timer. */
-  polybench_stop_instruments;
-  polybench_print_instruments;
+  polybench_timer_stop();
+  if (option == option_time)
+    polybench_timer_print();
 
   /* Store the result data. */
   std::shared_ptr<Literal> axpy_result_literal = 
@@ -137,7 +140,8 @@ int main(int argc, char** argv)
 
   /* Prevent dead-code elimination. All live-out data must be printed
      by the function call in argument. */
-  polybench_prevent_dce(print_array(nr, nq, np,  POLYBENCH_ARRAY(A)));
+  if (option == option_validate)
+    print_array(nr, nq, np,  POLYBENCH_ARRAY(A));
 
   /* Be clean. */
   POLYBENCH_FREE_ARRAY(A);
