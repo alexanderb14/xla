@@ -1,6 +1,12 @@
-load("//xla:xla.bzl", "xla_cc_test")
+load(
+    "//xla:xla.bzl",
+    "xla_cc_binary",
+    "xla_cc_test",
+    "xla_py_proto_library",
+    "xla_py_test_deps",
+)
 
-xla_cc_test(
+xla_cc_binary(
     name = "stablehlo_compile_test",
     srcs = ["stablehlo_compile_test.cc"],
     data = ["stablehlo_axpy.mlir"],
@@ -14,16 +20,12 @@ xla_cc_test(
         "//xla/service:cpu_plugin",
         "//xla/service:platform_util",
         "//xla/service/cpu:cpu_compiler",
-        "//xla/tests:literal_test_util",
-        "@com_google_googletest//:gtest_main",
         "@llvm-project//mlir:FuncDialect",
         "@llvm-project//mlir:IR",
         "@llvm-project//mlir:Parser",
         "@stablehlo//:register",
-        "@tsl//tsl/lib/core:status_test_util",
         "@tsl//tsl/platform:env",
         "@tsl//tsl/platform:path",
         "@tsl//tsl/platform:statusor",
-        "@tsl//tsl/platform:test",
     ],
 )

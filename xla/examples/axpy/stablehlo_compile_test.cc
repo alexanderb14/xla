@@ -20,7 +20,6 @@ limitations under the License.
 #include <utility>
 #include <vector>
 
-#include <gtest/gtest.h>
 #include "mlir/Dialect/Func/IR/FuncOps.h"  // from @llvm-project
 #include "mlir/IR/DialectRegistry.h"  // from @llvm-project
 #include "mlir/Parser/Parser.h"  // from @llvm-project
@@ -32,17 +31,13 @@ limitations under the License.
 #include "xla/pjrt/pjrt_client.h"
 #include "xla/pjrt/pjrt_stream_executor_client.h"
 #include "xla/service/platform_util.h"
-#include "xla/tests/literal_test_util.h"
-#include "tsl/lib/core/status_test_util.h"
 #include "tsl/platform/env.h"
 #include "tsl/platform/path.h"
 #include "tsl/platform/statusor.h"
-#include "tsl/platform/test.h"
 
-namespace xla {
-namespace {
+using namespace xla;
 
-TEST(StableHloAxpyTest, LoadAndRunCpuExecutable) {
+int main(int argc, char** argv) {
   // Setup client
   LocalClient* local_client = xla::ClientLibrary::LocalClientOrDie();
 
@@ -52,12 +47,10 @@ TEST(StableHloAxpyTest, LoadAndRunCpuExecutable) {
   // plugs into XLA by registering a new platform with a different string
   // key. For example for an Nvidia GPU change the following to:
   //   PlatformUtil::GetPlatform("CUDA"));
-  TF_ASSERT_OK_AND_ASSIGN(se::Platform * platform,
-                          PlatformUtil::GetPlatform("cpu"));
+  se::Platform* platform = PlatformUtil::GetPlatform("cpu").value();
   se::StreamExecutorConfig config;
   config.ordinal = 0;
-  TF_ASSERT_OK_AND_ASSIGN(se::StreamExecutor * executor,
-                          platform->GetExecutor(config));
+  se::StreamExecutor* executor = platform->GetExecutor(config).value();
 
   // LocalDeviceState and PjRtStreamExecutorDevice describes the state of a
   // device which can do computation or transfer buffers. This could represent a
@@ -85,8 +78,9 @@ TEST(StableHloAxpyTest, LoadAndRunCpuExecutable) {
   std::string program_path = "/tmp/xla_compile/synth_and_prep_fn.mlir";
   std::string program_string;
 
-  TF_ASSERT_OK(tsl::ReadFileToString(tsl::Env::Default(), program_path,
-                                     &program_string));
+  auto readStatus = tsl::ReadFileToString(tsl::Env::Default(), program_path,
+                                     &program_string);
+  assert(readStatus.ok());
 
   std::cerr << "Loaded StableHLO program from " << program_path << ":\n"
             << program_string << std::endl;
@@ -103,8 +97,8 @@ TEST(StableHloAxpyTest, LoadAndRunCpuExecutable) {
       mlir::parseSourceString<mlir::ModuleOp>(program_string, ctx.get());
 
   // Use our client to compile our StableHLO program to an executable.
-  TF_ASSERT_OK_AND_ASSIGN(std::unique_ptr<PjRtLoadedExecutable> executable,
-                          pjrt_se_client.Compile(*program, CompileOptions{}));
+  std::unique_ptr<PjRtLoadedExecutable> executable =
+                          pjrt_se_client.Compile(*program, CompileOptions{}).value();
 
   // Create inputs to our computation.
   auto x_a = xla::Array3D<double>(250, 220, 270);
@@ -132,14 +126,14 @@ TEST(StableHloAxpyTest, LoadAndRunCpuExecutable) {
 
   // Transfer our literals to buffers. If we were using a GPU, these buffers
   // would correspond to device memory.
-  TF_ASSERT_OK_AND_ASSIGN(std::unique_ptr<PjRtBuffer> x,
-                          pjrt_se_client.BufferFromHostLiteral(x_literal, cpu));
-  TF_ASSERT_OK_AND_ASSIGN(std::unique_ptr<PjRtBuffer> y,
-                          pjrt_se_client.BufferFromHostLiteral(y_literal, cpu));
+  std::unique_ptr<PjRtBuffer> x =
+                          pjrt_se_client.BufferFromHostLiteral(x_literal, cpu).value();
+  std::unique_ptr<PjRtBuffer> y =
+                          pjrt_se_client.BufferFromHostLiteral(y_literal, cpu).value();
 
   // Block until the buffers are ready.
-  TF_ASSERT_OK(x->BlockHostUntilReady());
-  TF_ASSERT_OK(y->BlockHostUntilReady());
+  auto sx = x->BlockHostUntilReady();
+  auto sy = y->BlockHostUntilReady();
 
   // Time the execution of the computation.
   absl::Time start = absl::Now();
@@ -147,9 +141,8 @@ TEST(StableHloAxpyTest, LoadAndRunCpuExecutable) {
   // Do our computation.
   ::xla::ExecuteOptions options;
   options.execution_mode = ::xla::ExecuteOptions::ExecutionMode::kSynchronous;
-  TF_ASSERT_OK_AND_ASSIGN(
-      std::vector<std::vector<std::unique_ptr<PjRtBuffer>>> axpy_result,
-      executable->Execute({{x.get(), y.get()}}, options));
+  std::vector<std::vector<std::unique_ptr<PjRtBuffer>>> axpy_result =
+      executable->Execute({{x.get(), y.get()}}, options).value();
 
   auto buffer = axpy_result[0][0].get();
   auto status = buffer->BlockHostUntilReady();
@@ -164,6 +157,3 @@ TEST(StableHloAxpyTest, LoadAndRunCpuExecutable) {
   //std::cerr << "Computation output: " << *axpy_result_literal << std::endl;
 
 }
-
-}  // namespace
-}  // namespace xla
