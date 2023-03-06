@@ -172,7 +172,29 @@ std::unique_ptr<PjRtLoadedExecutable> buildExecutable(std::shared_ptr<PjRtStream
   return executable;
 }
 
+std::unique_ptr<PjRtBuffer> buildBuffer2D(
+    std::shared_ptr<PjRtStreamExecutorClient> client,
+    xla::Array2D<DATA_TYPE>& arr) {
+  PjRtDevice* cpu = client->devices()[0];
+  auto x_literal = xla::LiteralUtil::CreateR2FromArray2D<DATA_TYPE>(arr);
+  std::unique_ptr<PjRtBuffer> x =
+      client->BufferFromHostLiteral(x_literal, cpu).value();
+  auto sx = x->BlockHostUntilReady();
 
+  return x;
+}
+
+std::unique_ptr<PjRtBuffer> buildBuffer3D(
+    std::shared_ptr<PjRtStreamExecutorClient> client,
+    xla::Array3D<DATA_TYPE>& arr) {
+  PjRtDevice* cpu = client->devices()[0];
+  auto x_literal = xla::LiteralUtil::CreateR3FromArray3D<DATA_TYPE>(arr);
+  std::unique_ptr<PjRtBuffer> x =
+      client->BufferFromHostLiteral(x_literal, cpu).value();
+  auto sx = x->BlockHostUntilReady();
+
+  return x;
+}
 
 int main(int argc, char** argv)
 {
@@ -191,40 +213,24 @@ int main(int argc, char** argv)
 	      POLYBENCH_ARRAY(A),
 	      POLYBENCH_ARRAY(C4));
 
-  // Build executable
+  /* Prepare computation. */
+  // - Build executable
   auto client = buildJITClient();
   auto executable = buildExecutable(client, "/tmp/xla_compile/synth_and_prep_fn.mlir");
 
-  // Create inputs to our computation.
-  PjRtDevice* cpu = client->devices()[0];
-
+  // - Create inputs.
   auto x_a = xla::Array3D<double>(NR, NQ, NP);
-  for (int i = 0; i < x_a.dim(0); ++i) {
-    for (int j = 0; j < x_a.dim(1); ++j) {
-      for (int k = 0; k < x_a.dim(2); ++k) {
+  for (int i = 0; i < x_a.dim(0); ++i)
+    for (int j = 0; j < x_a.dim(1); ++j)
+      for (int k = 0; k < x_a.dim(2); ++k)
 	      x_a(i, j, k) = (*A)[i][j][k];
-      }
-    }
-  }
-  auto x_literal = xla::LiteralUtil::CreateR3FromArray3D<double>(
-      x_a);
-  std::unique_ptr<PjRtBuffer> x =
-                          client->BufferFromHostLiteral(x_literal, cpu).value();
+  auto x = buildBuffer3D(client, x_a);
 
   auto y_a = xla::Array2D<double>(NP, NP);
-  for (int i = 0; i < y_a.dim(0); ++i) {
-    for (int j = 0; j < y_a.dim(1); ++j) {
+  for (int i = 0; i < y_a.dim(0); ++i)
+    for (int j = 0; j < y_a.dim(1); ++j)
       y_a(i, j) = (*C4)[i][j];
-    }
-  }
-  auto y_literal = xla::LiteralUtil::CreateR2FromArray2D<double>(
-      y_a);
-  std::unique_ptr<PjRtBuffer> y =
-                          client->BufferFromHostLiteral(y_literal, cpu).value();
-
-  // Block until the buffers are ready.
-  auto sx = x->BlockHostUntilReady();
-  auto sy = y->BlockHostUntilReady();
+  auto y = buildBuffer2D(client, y_a);
 
   /* Start timer. */
   polybench_start_instruments;
@@ -243,17 +249,14 @@ int main(int argc, char** argv)
   polybench_stop_instruments;
   polybench_print_instruments;
 
-  // Store the data in the result literal back in the array A.
+  /* Store the result data. */
   std::shared_ptr<Literal> axpy_result_literal = 
                           axpy_result[0][0]->ToLiteralSync().value();
   auto axpy_result_a = axpy_result_literal->data<double>();
-  for (int i = 0; i < x_a.dim(0); ++i) {
-    for (int j = 0; j < x_a.dim(1); ++j) {
-      for (int k = 0; k < x_a.dim(2); ++k) {
+  for (int i = 0; i < x_a.dim(0); ++i)
+    for (int j = 0; j < x_a.dim(1); ++j)
+      for (int k = 0; k < x_a.dim(2); ++k)
         (*A)[i][j][k] = axpy_result_a[i*x_a.dim(1)*x_a.dim(2) + j*x_a.dim(2) + k];
-      }
-    }
-  }
 
   /* Prevent dead-code elimination. All live-out data must be printed
      by the function call in argument. */
