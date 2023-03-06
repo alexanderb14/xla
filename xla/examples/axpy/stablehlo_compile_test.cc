@@ -103,24 +103,7 @@ void kernel_doitgen(int nr, int nq, int np,
 
 }
 
-
-int main(int argc, char** argv)
-{
-  /* Retrieve problem size. */
-  int nr = NR;
-  int nq = NQ;
-  int np = NP;
-
-  /* Variable declaration/allocation. */
-  POLYBENCH_3D_ARRAY_DECL(A,DATA_TYPE,NR,NQ,NP,nr,nq,np);
-  POLYBENCH_1D_ARRAY_DECL(sum,DATA_TYPE,NP,np);
-  POLYBENCH_2D_ARRAY_DECL(C4,DATA_TYPE,NP,NP,np,np);
-
-  /* Initialize array(s). */
-  init_array (nr, nq, np,
-	      POLYBENCH_ARRAY(A),
-	      POLYBENCH_ARRAY(C4));
-
+std::shared_ptr<PjRtStreamExecutorClient> buildJITClient() {
   // Setup client
   LocalClient* local_client = xla::ClientLibrary::LocalClientOrDie();
 
@@ -149,16 +132,19 @@ int main(int argc, char** argv)
 
   // The PjRtStreamExecutorClient will allow us to compile and execute
   // computations on the device we just configured.
-  auto pjrt_se_client = PjRtStreamExecutorClient(
+  auto pjrt_se_client = std::make_shared<PjRtStreamExecutorClient>(
       "cpu", local_client, std::move(devices), /*process_index=*/0,
       /*allocator=*/nullptr, /*host_memory_allocator=*/nullptr,
       /*should_stage_host_to_device_transfers=*/false,
       /*gpu_run_options=*/nullptr);
 
+  return pjrt_se_client;
+}
+
+std::unique_ptr<PjRtLoadedExecutable> buildExecutable(std::shared_ptr<PjRtStreamExecutorClient> client, std::string program_path) {
   // Read StableHLO program to string.
   //std::string program_path = tsl::io::JoinPath(
   //    tsl::testing::XlaSrcRoot(), "examples", "axpy", "stablehlo_axpy.mlir");
-  std::string program_path = "/tmp/xla_compile/synth_and_prep_fn.mlir";
   std::string program_string;
 
   auto readStatus = tsl::ReadFileToString(tsl::Env::Default(), program_path,
@@ -181,38 +167,60 @@ int main(int argc, char** argv)
 
   // Use our client to compile our StableHLO program to an executable.
   std::unique_ptr<PjRtLoadedExecutable> executable =
-                          pjrt_se_client.Compile(*program, CompileOptions{}).value();
+                          client->Compile(*program, CompileOptions{}).value();
+
+  return executable;
+}
+
+
+
+int main(int argc, char** argv)
+{
+  /* Retrieve problem size. */
+  int nr = NR;
+  int nq = NQ;
+  int np = NP;
+
+  /* Variable declaration/allocation. */
+  POLYBENCH_3D_ARRAY_DECL(A,DATA_TYPE,NR,NQ,NP,nr,nq,np);
+  POLYBENCH_1D_ARRAY_DECL(sum,DATA_TYPE,NP,np);
+  POLYBENCH_2D_ARRAY_DECL(C4,DATA_TYPE,NP,NP,np,np);
+
+  /* Initialize array(s). */
+  init_array (nr, nq, np,
+	      POLYBENCH_ARRAY(A),
+	      POLYBENCH_ARRAY(C4));
+
+  // Build executable
+  auto client = buildJITClient();
+  auto executable = buildExecutable(client, "/tmp/xla_compile/synth_and_prep_fn.mlir");
 
   // Create inputs to our computation.
-  auto x_a = xla::Array3D<double>(250, 220, 270);
+  PjRtDevice* cpu = client->devices()[0];
+
+  auto x_a = xla::Array3D<double>(NR, NQ, NP);
   for (int i = 0; i < x_a.dim(0); ++i) {
     for (int j = 0; j < x_a.dim(1); ++j) {
       for (int k = 0; k < x_a.dim(2); ++k) {
-	      x_a(i, j, k) = (DATA_TYPE) ((i*j + k)%np) / np;
+	      x_a(i, j, k) = (*A)[i][j][k];
       }
     }
   }
   auto x_literal = xla::LiteralUtil::CreateR3FromArray3D<double>(
       x_a);
+  std::unique_ptr<PjRtBuffer> x =
+                          client->BufferFromHostLiteral(x_literal, cpu).value();
 
-  auto y_a = xla::Array2D<double>(270, 270);
+  auto y_a = xla::Array2D<double>(NP, NP);
   for (int i = 0; i < y_a.dim(0); ++i) {
     for (int j = 0; j < y_a.dim(1); ++j) {
-      y_a(i, j) = (DATA_TYPE) (i*j % np) / np;
+      y_a(i, j) = (*C4)[i][j];
     }
   }
   auto y_literal = xla::LiteralUtil::CreateR2FromArray2D<double>(
       y_a);
-
-  // Get the host device.
-  PjRtDevice* cpu = pjrt_se_client.devices()[0];
-
-  // Transfer our literals to buffers. If we were using a GPU, these buffers
-  // would correspond to device memory.
-  std::unique_ptr<PjRtBuffer> x =
-                          pjrt_se_client.BufferFromHostLiteral(x_literal, cpu).value();
   std::unique_ptr<PjRtBuffer> y =
-                          pjrt_se_client.BufferFromHostLiteral(y_literal, cpu).value();
+                          client->BufferFromHostLiteral(y_literal, cpu).value();
 
   // Block until the buffers are ready.
   auto sx = x->BlockHostUntilReady();
