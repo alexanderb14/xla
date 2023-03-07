@@ -15,7 +15,7 @@ res_dir = '/tmp/perf_results'
 tmp_dir = '/tmp/perf_results_tmp'
 
 def run_program(x):
-    print(' '.join(x))
+    # print(' '.join(x))
     p = subprocess.run(x, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE)
     return p.stdout.decode('utf-8'), p.stderr.decode('utf-8'), p.returncode
@@ -25,6 +25,10 @@ def prepare_dir(dir):
     if os.path.exists(dir):
         shutil.rmtree(dir)
     os.mkdir(dir)
+
+
+def get_array_dump(s):
+    return s.split('==BEGIN DUMP_ARRAYS==')[1].split('==END DUMP_ARRAYS==')[0]
 
 
 def benchmark_polly(benchmark, validate=False):
@@ -81,14 +85,17 @@ benchmarks = [
 def main():
     for benchmark in benchmarks:
         prepare_dir(res_dir)
-        print(benchmark_polly(benchmark)[0])
-        print(benchmark_xla(benchmark)[0])
 
-        out_polly = benchmark_polly(benchmark, validate=False)[1]
-        out_xla = benchmark_xla(benchmark, validate=False)[1]
-        print(out_polly)
-        print(out_xla)
-        assert out_polly == out_xla
+        # Time.
+        out_time_polly = float(benchmark_polly(benchmark, validate=False)[0])
+        out_time_xla = float(benchmark_xla(benchmark, validate=False)[0])
+        print(out_time_polly)
+        print(out_time_xla)
+
+        # Validate.
+        out_validate_polly = benchmark_polly(benchmark, validate=True)[1]
+        out_validate_xla = benchmark_xla(benchmark, validate=True)[1]
+        assert get_array_dump(out_validate_polly) == get_array_dump(out_validate_xla)
 
 
 if __name__ == '__main__':
