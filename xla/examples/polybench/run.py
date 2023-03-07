@@ -83,7 +83,8 @@ benchmarks = [
 ]
 
 def main():
-    for benchmark in benchmarks:
+    for benchmark in tqdm.tqdm(benchmarks):
+        print('Benchmarking %s' % benchmark.name)
         prepare_dir(res_dir)
 
         # Time.
