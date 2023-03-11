@@ -85,9 +85,13 @@ benchmarks = [
             '%s/linear-algebra/kernels/2mm/2mm.c' % polybench_dir,
             '%s/utilities/polybench.c' % polybench_dir]),
     Benchmark(
+        '3mm', ['-I%s/utilities' % polybench_dir], [
+            '%s/linear-algebra/kernels/3mm/3mm.c' % polybench_dir,
+            '%s/utilities/polybench.c' % polybench_dir]),
+    Benchmark(
         'doitgen', ['-I%s/utilities' % polybench_dir], [
             '%s/linear-algebra/kernels/doitgen/doitgen.c' % polybench_dir,
-            '%s/utilities/polybench.c' % polybench_dir])
+            '%s/utilities/polybench.c' % polybench_dir]),
 ]
 
 def main():
