@@ -114,14 +114,12 @@ int main(int argc, char** argv)
   /* Start timer. */
   polybench_timer_start();
 
-  ::xla::ExecuteOptions options;
-  options.execution_mode = ::xla::ExecuteOptions::ExecutionMode::kSynchronous;
-
   /* Run kernel. */
-  std::vector<std::vector<std::unique_ptr<PjRtBuffer>>> axpy_result =
+  ::xla::ExecuteOptions options;
+  std::vector<std::vector<std::unique_ptr<PjRtBuffer>>> result =
       executable->Execute({{x.get(), y.get()}}, options).value();
 
-  auto buffer = axpy_result[0][0].get();
+  auto buffer = result[0][0].get();
   auto status = buffer->BlockHostUntilReady();
 
   /* Stop and print timer. */
@@ -130,13 +128,13 @@ int main(int argc, char** argv)
     polybench_timer_print();
 
   /* Store the result data. */
-  std::shared_ptr<Literal> axpy_result_literal = 
-                          axpy_result[0][0]->ToLiteralSync().value();
-  auto axpy_result_a = axpy_result_literal->data<double>();
+  std::shared_ptr<Literal> result_literal = 
+                          result[0][0]->ToLiteralSync().value();
+  auto result_a = result_literal->data<double>();
   for (int i = 0; i < x_a.dim(0); ++i)
     for (int j = 0; j < x_a.dim(1); ++j)
       for (int k = 0; k < x_a.dim(2); ++k)
-        (*A)[i][j][k] = axpy_result_a[i*x_a.dim(1)*x_a.dim(2) + j*x_a.dim(2) + k];
+        (*A)[i][j][k] = result_a[i*x_a.dim(1)*x_a.dim(2) + j*x_a.dim(2) + k];
 
   /* Prevent dead-code elimination. All live-out data must be printed
      by the function call in argument. */

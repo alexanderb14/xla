@@ -11,7 +11,10 @@ cc_library(
     name = "polybench_lib",
     srcs = ["polybench.cc"],
     hdrs = ["polybench.h",
-            "doitgen.h"],
+            "atax.h",
+            "2mm.h",
+            "doitgen.h",
+    ],
     visibility = ["//visibility:public"],
 )
 
@@ -37,6 +40,26 @@ cc_library(
         "@tsl//tsl/platform:env",
         "@tsl//tsl/platform:path",
         "@tsl//tsl/platform:statusor",
+    ],
+)
+
+xla_cc_binary(
+    name = "atax",
+    srcs = ["atax.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":polybench_lib",
+        ":xla_compiler_lib",
+    ],
+)
+
+xla_cc_binary(
+    name = "2mm",
+    srcs = ["2mm.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":polybench_lib",
+        ":xla_compiler_lib",
     ],
 )
 

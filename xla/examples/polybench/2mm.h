@@ -9,52 +9,58 @@
  *
  * Web address: http://polybench.sourceforge.net
  */
-#ifndef _DOITGEN_H
-# define _DOITGEN_H
+#ifndef _2MM_H
+# define _2MM_H
 
 /* Default to LARGE_DATASET. */
 # if !defined(MINI_DATASET) && !defined(SMALL_DATASET) && !defined(MEDIUM_DATASET) && !defined(LARGE_DATASET) && !defined(EXTRALARGE_DATASET)
 #  define LARGE_DATASET
 # endif
 
-# if !defined(NQ) && !defined(NR) && !defined(NP)
+# if !defined(NI) && !defined(NJ) && !defined(NK) && !defined(NL)
 /* Define sample dataset sizes. */
 #  ifdef MINI_DATASET
-#   define NQ 8
-#   define NR 10
-#   define NP 12
+#   define NI 16
+#   define NJ 18
+#   define NK 22
+#   define NL 24
 #  endif
 
 #  ifdef SMALL_DATASET
-#   define NQ 20
-#   define NR 25
-#   define NP 30
+#   define NI 40
+#   define NJ 50
+#   define NK 70
+#   define NL 80
 #  endif
 
 #  ifdef MEDIUM_DATASET
-#   define NQ 40
-#   define NR 50
-#   define NP 60
+#   define NI 180
+#   define NJ 190
+#   define NK 210
+#   define NL 220
 #  endif
 
 #  ifdef LARGE_DATASET
-#   define NQ 140
-#   define NR 150
-#   define NP 160
+#   define NI 800
+#   define NJ 900
+#   define NK 1100
+#   define NL 1200
 #  endif
 
 #  ifdef EXTRALARGE_DATASET
-#   define NQ 220
-#   define NR 250
-#   define NP 270
+#   define NI 1600
+#   define NJ 1800
+#   define NK 2200
+#   define NL 2400
 #  endif
 
 
-#endif /* !(NQ NR NP) */
+#endif /* !(NI NJ NK NL) */
 
-# define _PB_NQ POLYBENCH_LOOP_BOUND(NQ,nq)
-# define _PB_NR POLYBENCH_LOOP_BOUND(NR,nr)
-# define _PB_NP POLYBENCH_LOOP_BOUND(NP,np)
+# define _PB_NI POLYBENCH_LOOP_BOUND(NI,ni)
+# define _PB_NJ POLYBENCH_LOOP_BOUND(NJ,nj)
+# define _PB_NK POLYBENCH_LOOP_BOUND(NK,nk)
+# define _PB_NL POLYBENCH_LOOP_BOUND(NL,nl)
 
 
 /* Default data type */
@@ -85,4 +91,4 @@
 #  define POW_FUN(x,y) pow(x,y)
 # endif
 
-#endif /* !_DOITGEN_H */
+#endif /* !_2MM_H */

@@ -15,6 +15,7 @@
 #include "tsl/platform/statusor.h"
 
 #include <iostream>
+#include <memory>
 #include <ostream>
 #include <utility>
 #include <vector>
@@ -101,6 +102,31 @@ std::unique_ptr<PjRtLoadedExecutable> buildExecutable(std::shared_ptr<PjRtStream
                           client->Compile(*program, CompileOptions{}).value();
 
   return executable;
+}
+
+std::unique_ptr<PjRtBuffer> buildBufferFromScalar(
+    std::shared_ptr<PjRtStreamExecutorClient> client,
+    DATA_TYPE scalar) {
+  PjRtDevice* cpu = client->devices()[0];
+  auto x_literal = xla::LiteralUtil::CreateR0<DATA_TYPE>(scalar);
+  std::unique_ptr<PjRtBuffer> x =
+      client->BufferFromHostLiteral(x_literal, cpu).value();
+  auto sx = x->BlockHostUntilReady();
+
+  return x;
+}
+
+
+std::unique_ptr<PjRtBuffer> buildBuffer1D(
+    std::shared_ptr<PjRtStreamExecutorClient> client,
+    xla::Array<DATA_TYPE>& arr) {
+  PjRtDevice* cpu = client->devices()[0];
+  auto x_literal = xla::LiteralUtil::CreateFromArray<DATA_TYPE>(arr);
+  std::unique_ptr<PjRtBuffer> x =
+      client->BufferFromHostLiteral(x_literal, cpu).value();
+  auto sx = x->BlockHostUntilReady();
+
+  return x;
 }
 
 std::unique_ptr<PjRtBuffer> buildBuffer2D(

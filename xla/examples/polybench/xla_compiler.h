@@ -15,6 +15,12 @@ std::shared_ptr<xla::PjRtStreamExecutorClient> buildJITClient();
 std::unique_ptr<xla::PjRtLoadedExecutable> buildExecutable(
     std::shared_ptr<xla::PjRtStreamExecutorClient> client, std::string program_path);
 
+std::unique_ptr<xla::PjRtBuffer> buildBufferFromScalar(
+    std::shared_ptr<xla::PjRtStreamExecutorClient> client,
+    DATA_TYPE scalar);
+std::unique_ptr<xla::PjRtBuffer> buildBuffer1D(
+    std::shared_ptr<xla::PjRtStreamExecutorClient> client,
+    xla::Array<DATA_TYPE>& arr);
 std::unique_ptr<xla::PjRtBuffer> buildBuffer2D(
     std::shared_ptr<xla::PjRtStreamExecutorClient> client,
     xla::Array2D<DATA_TYPE>& arr);
