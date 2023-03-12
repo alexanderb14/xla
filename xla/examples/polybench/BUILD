@@ -15,6 +15,7 @@ cc_library(
             "2mm.h",
             "3mm.h",
             "bicg.h",
+            "gemm.h",
             "mvt.h",
             "doitgen.h",
     ],
@@ -79,6 +80,16 @@ xla_cc_binary(
 xla_cc_binary(
     name = "bicg",
     srcs = ["bicg.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":polybench_lib",
+        ":xla_compiler_lib",
+    ],
+)
+
+xla_cc_binary(
+    name = "gemm",
+    srcs = ["gemm.cc"],
     visibility = ["//visibility:public"],
     deps = [
         ":polybench_lib",
