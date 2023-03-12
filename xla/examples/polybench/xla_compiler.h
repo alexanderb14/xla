@@ -1,6 +1,7 @@
 #define DATA_TYPE double
 
 #include "xla/pjrt/pjrt_stream_executor_client.h"
+#include "xla/array.h"
 
 #include <memory>
 #include <string>

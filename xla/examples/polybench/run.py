@@ -81,6 +81,10 @@ benchmarks = [
             '%s/linear-algebra/kernels/atax/atax.c' % polybench_dir,
             '%s/utilities/polybench.c' % polybench_dir]),
     Benchmark(
+        'mvt', ['-I%s/utilities' % polybench_dir], [
+            '%s/linear-algebra/kernels/mvt/mvt.c' % polybench_dir,
+            '%s/utilities/polybench.c' % polybench_dir]),
+    Benchmark(
         '2mm', ['-I%s/utilities' % polybench_dir], [
             '%s/linear-algebra/kernels/2mm/2mm.c' % polybench_dir,
             '%s/utilities/polybench.c' % polybench_dir]),
