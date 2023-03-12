@@ -77,6 +77,10 @@ Benchmark = collections.namedtuple(
     'Benchmark', ['name', 'includes', 'sources'])
 benchmarks = [
     Benchmark(
+        'gemver', ['-I%s/utilities' % polybench_dir], [
+            '%s/linear-algebra/blas/gemver/gemver.c' % polybench_dir,
+            '%s/utilities/polybench.c' % polybench_dir]),
+    Benchmark(
         'gesummv', ['-I%s/utilities' % polybench_dir], [
             '%s/linear-algebra/blas/gesummv/gesummv.c' % polybench_dir,
             '%s/utilities/polybench.c' % polybench_dir]),
