@@ -14,6 +14,7 @@ cc_library(
             "atax.h",
             "2mm.h",
             "3mm.h",
+            "bicg.h",
             "mvt.h",
             "doitgen.h",
     ],
@@ -68,6 +69,16 @@ xla_cc_binary(
 xla_cc_binary(
     name = "3mm",
     srcs = ["3mm.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":polybench_lib",
+        ":xla_compiler_lib",
+    ],
+)
+
+xla_cc_binary(
+    name = "bicg",
+    srcs = ["bicg.cc"],
     visibility = ["//visibility:public"],
     deps = [
         ":polybench_lib",

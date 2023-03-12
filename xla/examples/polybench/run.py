@@ -77,6 +77,10 @@ Benchmark = collections.namedtuple(
     'Benchmark', ['name', 'includes', 'sources'])
 benchmarks = [
     Benchmark(
+        'bicg', ['-I%s/utilities' % polybench_dir], [
+            '%s/linear-algebra/kernels/bicg/bicg.c' % polybench_dir,
+            '%s/utilities/polybench.c' % polybench_dir]),
+    Benchmark(
         'atax', ['-I%s/utilities' % polybench_dir], [
             '%s/linear-algebra/kernels/atax/atax.c' % polybench_dir,
             '%s/utilities/polybench.c' % polybench_dir]),
