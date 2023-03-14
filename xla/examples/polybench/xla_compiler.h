@@ -1,4 +1,4 @@
-#define DATA_TYPE double
+#define DATA_TYPE float
 
 #include "xla/pjrt/pjrt_stream_executor_client.h"
 #include "xla/array.h"

@@ -1,4 +1,4 @@
-#define EXTRALARGE_DATASET
+#define DATA_TYPE_IS_FLOAT
 
 /**
  * This version is stamped on May 10, 2016
