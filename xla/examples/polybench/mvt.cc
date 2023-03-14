@@ -109,7 +109,7 @@ int main(int argc, char** argv)
 
   /* Prepare computation. */
   // - Build executable
-  auto client = buildJITClient();
+  auto client = buildJITClient(option);
   auto executable = buildExecutable(
       client, "/devel/git_3rd/xla/xla/examples/polybench/mvt.mlir");
 
@@ -159,7 +159,7 @@ int main(int argc, char** argv)
 
   /* Stop and print timer. */
   polybench_timer_stop();
-  if (option == option_time)
+  if (option == option_time || option == option_time_sequential)
     polybench_timer_print();
 
   /* Prevent dead-code elimination. All live-out data must be printed

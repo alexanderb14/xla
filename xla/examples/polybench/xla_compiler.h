@@ -8,11 +8,12 @@
 
 enum cmd_option {
   option_time,
+  option_time_sequential,
   option_validate
 };
 cmd_option parseOption(int argc, char** argv);
 
-std::shared_ptr<xla::PjRtStreamExecutorClient> buildJITClient();
+std::shared_ptr<xla::PjRtStreamExecutorClient> buildJITClient(cmd_option option);
 std::unique_ptr<xla::PjRtLoadedExecutable> buildExecutable(
     std::shared_ptr<xla::PjRtStreamExecutorClient> client, std::string program_path);
 

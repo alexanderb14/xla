@@ -23,21 +23,33 @@
 using namespace xla;
 
 cmd_option parseOption(int argc, char** argv) {
-  if (argc == 1) {
+  if (argc < 2) {
     return option_time;
   }
-  if (argc == 2) {
-    if (strcmp(argv[1], "--validate") == 0) {
-      return option_validate;
-    }
+  std::string option = argv[1];
+  if (option == "--time") {
+    return option_time;
+  } else if (option == "--time-sequential") {
+    return option_time_sequential;
+  } else if (option == "--validate") {
+    return option_validate;
+  } else {
+    std::cerr << "Usage: " << argv[0] << " --time | --time-sequential | --validate" << std::endl;
+    exit(1);
   }
-  std::cerr << "Usage: " << argv[0] << " [--validate]" << std::endl;
-  exit(1);
 }
 
-std::shared_ptr<PjRtStreamExecutorClient> buildJITClient() {
+std::shared_ptr<PjRtStreamExecutorClient> buildJITClient(cmd_option option) {
   // Setup client
-  LocalClient* local_client = xla::ClientLibrary::LocalClientOrDie();
+  //LocalClient* local_client = xla::ClientLibrary::LocalClientOrDie();
+
+  LocalClientOptions options;
+  if (option == option_time_sequential) {
+    options.set_intra_op_parallelism_threads(1);
+  }
+  auto local_client_status = xla::ClientLibrary::GetOrCreateLocalClient(options);
+  assert(local_client_status.ok());
+  LocalClient* local_client = local_client_status.value();
 
   // Retrieve the "platform" we intend to execute the computation on. The
   // concept of "platform" in XLA abstracts entirely everything needed to
