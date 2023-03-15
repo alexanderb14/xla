@@ -113,6 +113,10 @@ benchmarks = [
             '%s/linear-algebra/blas/syrk/syrk.c' % polybench_dir,
             '%s/utilities/polybench.c' % polybench_dir]),
     Benchmark(
+        'syr2k', ['-I%s/utilities' % polybench_dir], [
+            '%s/linear-algebra/blas/syr2k/syr2k.c' % polybench_dir,
+            '%s/utilities/polybench.c' % polybench_dir]),
+    Benchmark(
         'bicg', ['-I%s/utilities' % polybench_dir], [
             '%s/linear-algebra/kernels/bicg/bicg.c' % polybench_dir,
             '%s/utilities/polybench.c' % polybench_dir]),
