@@ -98,7 +98,7 @@ int main(int argc, char** argv)
       client, "/devel/git_3rd/xla/xla/examples/polybench/atax.mlir");
 
   // - Create inputs.
-  auto A_a = xla::Array2D<double>(m, n);
+  auto A_a = xla::Array2D<float>(m, n);
   for (int i = 0; i < m; i++) {
     for (int j = 0; j < n; j++) {
       A_a(i, j) = (*A)[i][j];
@@ -106,7 +106,7 @@ int main(int argc, char** argv)
   }
   auto A_b = buildBuffer2D(client, A_a);
 
-  auto x_a = xla::Array<double>(absl::Span<const int64_t> {n});
+  auto x_a = xla::Array<float>(absl::Span<const int64_t> {n});
   for (int i = 0; i < m; i++) {
     x_a(i) = (*x)[i];
   }
@@ -131,7 +131,7 @@ int main(int argc, char** argv)
   /* Store the result data. */
   std::shared_ptr<Literal> result_literal = 
                           result[0][0]->ToLiteralSync().value();
-  auto result_a = result_literal->data<double>();
+  auto result_a = result_literal->data<float>();
   for (int i = 0; i < n; i++) {
     (*y)[i] = result_a[i];
   }

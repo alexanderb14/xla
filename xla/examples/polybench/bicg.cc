@@ -112,7 +112,7 @@ int main(int argc, char** argv)
       client, "/devel/git_3rd/xla/xla/examples/polybench/bicg.mlir");
 
   // - Create inputs.
-  auto A_a = xla::Array2D<double>(n, m);
+  auto A_a = xla::Array2D<float>(n, m);
   for (int i = 0; i < n; ++i) {
     for (int j = 0; j < m; ++j) {
       A_a(i, j) = (*A)[i][j];
@@ -120,25 +120,25 @@ int main(int argc, char** argv)
   }
   auto A_b = buildBuffer1D(client, A_a);
 
-  auto s_a = xla::Array<double>({m});
+  auto s_a = xla::Array<float>({m});
   for (int i = 0; i < m; ++i) {
     s_a(i) = (*s)[i];
   }
   auto s_b = buildBuffer1D(client, s_a);
 
-  auto q_a = xla::Array<double>({n});
+  auto q_a = xla::Array<float>({n});
   for (int i = 0; i < n; ++i) {
     q_a(i) = (*q)[i];
   }
   auto q_b = buildBuffer1D(client, q_a);
 
-  auto p_a = xla::Array<double>({m});
+  auto p_a = xla::Array<float>({m});
   for (int i = 0; i < m; ++i) {
     p_a(i) = (*p)[i];
   }
   auto p_b = buildBuffer1D(client, p_a);
 
-  auto r_a = xla::Array<double>({n});
+  auto r_a = xla::Array<float>({n});
   for (int i = 0; i < n; ++i) {
     r_a(i) = (*r)[i];
   }

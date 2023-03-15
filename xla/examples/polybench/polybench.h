@@ -1,6 +1,7 @@
 #define POLYBENCH_TIME
 #define POLYBENCH_DUMP_ARRAYS
 #define LARGE_DATASET
+#define DATA_TYPE_IS_FLOAT
 
 /**
  * This version is stamped on May 10, 2016

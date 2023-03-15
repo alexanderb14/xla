@@ -149,48 +149,48 @@ int main(int argc, char** argv)
 
   auto beta_b = buildBufferFromScalar(client, beta);
 
-  auto A_a = xla::Array2D<double>(n, n);
+  auto A_a = xla::Array2D<float>(n, n);
   for (int i = 0; i < n; i++)
     for (int j = 0; j < n; j++)
       A_a(i, j) = (*A)[i][j];
   auto A_b = buildBuffer2D(client, A_a);
 
-  auto u1_a = xla::Array<double>({n});
+  auto u1_a = xla::Array<float>({n});
   for (int i = 0; i < n; i++)
     u1_a(i) = (*u1)[i];
   auto u1_b = buildBuffer1D(client, u1_a);
 
-  auto v1_a = xla::Array<double>({n});
+  auto v1_a = xla::Array<float>({n});
   for (int i = 0; i < n; i++)
     v1_a(i) = (*v1)[i];
   auto v1_b = buildBuffer1D(client, v1_a);
 
-  auto u2_a = xla::Array<double>({n});
+  auto u2_a = xla::Array<float>({n});
   for (int i = 0; i < n; i++)
     u2_a(i) = (*u2)[i];
   auto u2_b = buildBuffer1D(client, u2_a);
 
-  auto v2_a = xla::Array<double>({n});
+  auto v2_a = xla::Array<float>({n});
   for (int i = 0; i < n; i++)
     v2_a(i) = (*v2)[i];
   auto v2_b = buildBuffer1D(client, v2_a);
 
-  auto w_a = xla::Array<double>({n});
+  auto w_a = xla::Array<float>({n});
   for (int i = 0; i < n; i++)
     w_a(i) = (*w)[i];
   auto w_b = buildBuffer1D(client, w_a);
 
-  auto x_a = xla::Array<double>({n});
+  auto x_a = xla::Array<float>({n});
   for (int i = 0; i < n; i++)
     x_a(i) = (*x)[i];
   auto x_b = buildBuffer1D(client, x_a);
 
-  auto y_a = xla::Array<double>({n});
+  auto y_a = xla::Array<float>({n});
   for (int i = 0; i < n; i++)
     y_a(i) = (*y)[i];
   auto y_b = buildBuffer1D(client, y_a);
 
-  auto z_a = xla::Array<double>({n});
+  auto z_a = xla::Array<float>({n});
   for (int i = 0; i < n; i++)
     z_a(i) = (*z)[i];
   auto z_b = buildBuffer1D(client, z_a);
@@ -217,7 +217,7 @@ int main(int argc, char** argv)
   /* Store the result data. */
   std::shared_ptr<Literal> result_literal = 
                           result[0][0]->ToLiteralSync().value();
-  auto result_a = result_literal->data<double>();
+  auto result_a = result_literal->data<float>();
   for (int i = 0; i < n; i++)
     (*w)[i] = result_a[i];
 

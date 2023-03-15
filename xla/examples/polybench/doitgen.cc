@@ -98,14 +98,14 @@ int main(int argc, char** argv)
       client, "/devel/git_3rd/xla/xla/examples/polybench/doitgen.mlir");
 
   // - Create inputs.
-  auto x_a = xla::Array3D<double>(NR, NQ, NP);
+  auto x_a = xla::Array3D<float>(NR, NQ, NP);
   for (int i = 0; i < x_a.dim(0); ++i)
     for (int j = 0; j < x_a.dim(1); ++j)
       for (int k = 0; k < x_a.dim(2); ++k)
 	      x_a(i, j, k) = (*A)[i][j][k];
   auto x = buildBuffer3D(client, x_a);
 
-  auto y_a = xla::Array2D<double>(NP, NP);
+  auto y_a = xla::Array2D<float>(NP, NP);
   for (int i = 0; i < y_a.dim(0); ++i)
     for (int j = 0; j < y_a.dim(1); ++j)
       y_a(i, j) = (*C4)[i][j];
@@ -130,7 +130,7 @@ int main(int argc, char** argv)
   /* Store the result data. */
   std::shared_ptr<Literal> result_literal = 
                           result[0][0]->ToLiteralSync().value();
-  auto result_a = result_literal->data<double>();
+  auto result_a = result_literal->data<float>();
   for (int i = 0; i < x_a.dim(0); ++i)
     for (int j = 0; j < x_a.dim(1); ++j)
       for (int k = 0; k < x_a.dim(2); ++k)

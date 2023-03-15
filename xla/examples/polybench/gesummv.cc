@@ -118,7 +118,7 @@ int main(int argc, char** argv)
 
   auto beta_b = buildBufferFromScalar(client, beta);
 
-  auto A_a = xla::Array2D<double>(n, n);
+  auto A_a = xla::Array2D<float>(n, n);
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
       A_a(i, j) = (*A)[i][j];
@@ -126,7 +126,7 @@ int main(int argc, char** argv)
   }
   auto A_b = buildBuffer2D(client, A_a);
 
-  auto B_a = xla::Array2D<double>(n, n);
+  auto B_a = xla::Array2D<float>(n, n);
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
       B_a(i, j) = (*B)[i][j];
@@ -134,19 +134,19 @@ int main(int argc, char** argv)
   }
   auto B_b = buildBuffer2D(client, B_a);
 
-  auto tmp_a = xla::Array<double>({n});
+  auto tmp_a = xla::Array<float>({n});
   for (int i = 0; i < n; i++) {
     tmp_a(i) = (*tmp)[i];
   }
   auto tmp_b = buildBuffer1D(client, tmp_a);
 
-  auto x_a = xla::Array<double>({n});
+  auto x_a = xla::Array<float>({n});
   for (int i = 0; i < n; i++) {
     x_a(i) = (*x)[i];
   }
   auto x_b = buildBuffer1D(client, x_a);
 
-  auto y_a = xla::Array<double>({n});
+  auto y_a = xla::Array<float>({n});
   for (int i = 0; i < n; i++) {
     y_a(i) = (*y)[i];
   }
@@ -173,7 +173,7 @@ int main(int argc, char** argv)
   /* Store the result data. */
   std::shared_ptr<Literal> result_literal = 
                           result[0][0]->ToLiteralSync().value();
-  auto result_a = result_literal->data<double>();
+  auto result_a = result_literal->data<float>();
   for (int i = 0; i < n; i++) {
     (*y)[i] = result_a[i];
   }

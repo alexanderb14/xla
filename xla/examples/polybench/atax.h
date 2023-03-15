@@ -1,5 +1,3 @@
-#define EXTRALARGE_DATASET
-
 /**
  * This version is stamped on May 10, 2016
  *

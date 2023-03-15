@@ -132,43 +132,43 @@ int main(int argc, char** argv)
       client, "/devel/git_3rd/xla/xla/examples/polybench/3mm.mlir");
 
   // - Create inputs.
-  auto E_a = xla::Array2D<double>(ni, nj);
+  auto E_a = xla::Array2D<float>(ni, nj);
   for (int i = 0; i < ni; i++)
     for (int j = 0; j < nj; j++)
       E_a(i, j) = (*E)[i][j];
   auto E_b = buildBuffer2D(client, E_a);
 
-  auto A_a = xla::Array2D<double>(ni, nk);
+  auto A_a = xla::Array2D<float>(ni, nk);
   for (int i = 0; i < ni; i++)
     for (int j = 0; j < nk; j++)
       A_a(i, j) = (*A)[i][j];
   auto A_b = buildBuffer2D(client, A_a);
 
-  auto B_a = xla::Array2D<double>(nk, nj);
+  auto B_a = xla::Array2D<float>(nk, nj);
   for (int i = 0; i < nk; i++)
     for (int j = 0; j < nj; j++)
       B_a(i, j) = (*B)[i][j];
   auto B_b = buildBuffer2D(client, B_a);
 
-  auto F_a = xla::Array2D<double>(nj, nl);
+  auto F_a = xla::Array2D<float>(nj, nl);
   for (int i = 0; i < nj; i++)
     for (int j = 0; j < nl; j++)
       F_a(i, j) = (*F)[i][j];
   auto F_b = buildBuffer2D(client, F_a);
 
-  auto C_a = xla::Array2D<double>(nj, nm);
+  auto C_a = xla::Array2D<float>(nj, nm);
   for (int i = 0; i < nj; i++)
     for (int j = 0; j < nm; j++)
       C_a(i, j) = (*C)[i][j];
   auto C_b = buildBuffer2D(client, C_a);
 
-  auto D_a = xla::Array2D<double>(nm, nl);
+  auto D_a = xla::Array2D<float>(nm, nl);
   for (int i = 0; i < nm; i++)
     for (int j = 0; j < nl; j++)
       D_a(i, j) = (*D)[i][j];
   auto D_b = buildBuffer2D(client, D_a);
 
-  auto G_a = xla::Array2D<double>(ni, nl);
+  auto G_a = xla::Array2D<float>(ni, nl);
   for (int i = 0; i < ni; i++)
     for (int j = 0; j < nl; j++)
       G_a(i, j) = (*G)[i][j];
@@ -193,7 +193,7 @@ int main(int argc, char** argv)
   /* Store the result data. */
   std::shared_ptr<Literal> result_literal = 
                           result[0][0]->ToLiteralSync().value();
-  auto result_a = result_literal->data<double>();
+  auto result_a = result_literal->data<float>();
   for (int i = 0; i < ni; i++)
     for (int j = 0; j < nl; j++)
       (*G)[i][j] = result_a[i * nl + j];

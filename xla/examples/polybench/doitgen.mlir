@@ -1,4 +1,4 @@
-func.func @main(%arg0: tensor<250x220x270xf64>, %arg1: tensor<270x270xf64>) -> tensor<250x220x270xf64> {
-  %0 = "stablehlo.dot_general"(%arg0, %arg1) {dot_dimension_numbers = #stablehlo.dot<lhs_contracting_dimensions = [2], rhs_contracting_dimensions = [0]>} : (tensor<250x220x270xf64>, tensor<270x270xf64>) -> tensor<250x220x270xf64>
-  return %0 : tensor<250x220x270xf64>
+func.func @main(%arg0: tensor<150x140x160xf32>, %arg1: tensor<160x160xf32>) -> tensor<150x140x160xf32> {
+  %0 = "stablehlo.dot_general"(%arg0, %arg1) {dot_dimension_numbers = #stablehlo.dot<lhs_contracting_dimensions = [2], rhs_contracting_dimensions = [0]>} : (tensor<150x140x160xf32>, tensor<160x160xf32>) -> tensor<150x140x160xf32>
+  return %0 : tensor<150x140x160xf32>
 }

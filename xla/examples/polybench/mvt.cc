@@ -114,31 +114,31 @@ int main(int argc, char** argv)
       client, "/devel/git_3rd/xla/xla/examples/polybench/mvt.mlir");
 
   // - Create inputs.
-  auto x1_a = xla::Array<double>({n});
+  auto x1_a = xla::Array<float>({n});
   for (int i = 0; i < n; i++) {
     x1_a(i) = (*x1)[i];
   }
   auto x1_b = buildBuffer1D(client, x1_a);
 
-  auto x2_a = xla::Array<double>({n});
+  auto x2_a = xla::Array<float>({n});
   for (int i = 0; i < n; i++) {
     x2_a(i) = (*x2)[i];
   }
   auto x2_b = buildBuffer1D(client, x2_a);
 
-  auto y_1_a = xla::Array<double>({n});
+  auto y_1_a = xla::Array<float>({n});
   for (int i = 0; i < n; i++) {
     y_1_a(i) = (*y_1)[i];
   }
   auto y_1_b = buildBuffer1D(client, y_1_a);
 
-  auto y_2_a = xla::Array<double>({n});
+  auto y_2_a = xla::Array<float>({n});
   for (int i = 0; i < n; i++) {
     y_2_a(i) = (*y_2)[i];
   }
   auto y_2_b = buildBuffer1D(client, y_2_a);
 
-  auto A_a = xla::Array2D<double>(n, n);
+  auto A_a = xla::Array2D<float>(n, n);
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
       A_a(i, j) = (*A)[i][j];
