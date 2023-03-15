@@ -19,6 +19,7 @@ cc_library(
             "gemver.h",
             "gesummv.h",
             "mvt.h",
+            "syrk.h",
             "doitgen.h",
     ],
     visibility = ["//visibility:public"],
@@ -122,6 +123,16 @@ xla_cc_binary(
 xla_cc_binary(
     name = "mvt",
     srcs = ["mvt.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":polybench_lib",
+        ":xla_compiler_lib",
+    ],
+)
+
+xla_cc_binary(
+    name = "syrk",
+    srcs = ["syrk.cc"],
     visibility = ["//visibility:public"],
     deps = [
         ":polybench_lib",
