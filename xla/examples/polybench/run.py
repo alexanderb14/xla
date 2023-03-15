@@ -22,7 +22,7 @@ common_polybench_args = [
 
 
 def run_program(x):
-    print(' '.join(x))
+    # print(' '.join(x))
     p = subprocess.run(x, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE)
     return p.stdout.decode('utf-8'), p.stderr.decode('utf-8'), p.returncode
@@ -108,6 +108,10 @@ def median_of_n(fn, args, n=5):
 Benchmark = collections.namedtuple(
     'Benchmark', ['name', 'includes', 'sources'])
 benchmarks = [
+    Benchmark(
+        'syrk', ['-I%s/utilities' % polybench_dir], [
+            '%s/linear-algebra/blas/syrk/syrk.c' % polybench_dir,
+            '%s/utilities/polybench.c' % polybench_dir]),
     Benchmark(
         'bicg', ['-I%s/utilities' % polybench_dir], [
             '%s/linear-algebra/kernels/bicg/bicg.c' % polybench_dir,
