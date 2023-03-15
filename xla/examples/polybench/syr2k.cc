@@ -117,6 +117,8 @@ int main(int argc, char** argv)
   // - Create inputs.
   auto alpha_b = buildBufferFromScalar(client, alpha);
 
+  auto beta_b = buildBufferFromScalar(client, beta);
+
   auto C_a = xla::Array2D<float>(n, n);
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
@@ -147,7 +149,7 @@ int main(int argc, char** argv)
   /* Run kernel. */
   ::xla::ExecuteOptions options;
   std::vector<std::vector<std::unique_ptr<PjRtBuffer>>> result =
-      executable->Execute({{A_b.get(), B_b.get(), C_b.get(), alpha_b.get()}},
+      executable->Execute({{alpha_b.get(), beta_b.get(), C_b.get(), A_b.get(), B_b.get()}},
                           options).value();
 
   auto buffer = result[0][0].get();
