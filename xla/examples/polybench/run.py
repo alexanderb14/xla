@@ -13,6 +13,13 @@ import pandas as pd
 polybench_dir = '/devel/git/irSynth-eval/benchmarks/polybench-c-4.2.1-beta'
 res_dir = '/tmp/perf_results'
 tmp_dir = '/tmp/perf_results_tmp'
+common_polybench_args = [
+    '-DPOLYBENCH_USE_SCALAR_LB',
+    '-DLARGE_DATASET',
+    '-DPOLYBENCH_TIME',
+    '-DDATA_TYPE_IS_FLOAT'
+]
+
 
 def run_program(x):
     print(' '.join(x))
@@ -31,13 +38,11 @@ def get_array_dump(s):
     return s.split('==BEGIN DUMP_ARRAYS==')[1].split('==END DUMP_ARRAYS==')[0]
 
 
-def benchmark_O3(benchmark, validate=False):
+def benchmark_O3(benchmark, validate):
     prepare_dir(tmp_dir)
-    cmd = ['clang', '-O3', '-march=native',
-           '-DPOLYBENCH_USE_SCALAR_LB',
-           '-DEXTRALARGE_DATASET',
-           '-DPOLYBENCH_TIME',
-           '-o', os.path.join(tmp_dir, 'a.out')]
+    cmd = ['clang', '-O3', '-march=native']
+    cmd += common_polybench_args
+    cmd += ['-o', os.path.join(tmp_dir, 'a.out')]
     cmd += benchmark.includes + benchmark.sources
     if validate:
         cmd += ['-DPOLYBENCH_DUMP_ARRAYS']
@@ -50,13 +55,11 @@ def benchmark_O3(benchmark, validate=False):
     return out, err
 
 
-def benchmark_polly(benchmark, parallel, validate=False):
+def benchmark_polly(benchmark, parallel, validate):
     prepare_dir(tmp_dir)
-    cmd = ['clang', '-O3', '-march=native',
-           '-DPOLYBENCH_USE_SCALAR_LB',
-           '-DEXTRALARGE_DATASET',
-           '-DPOLYBENCH_TIME',
-           '-mllvm', '-polly',
+    cmd = ['clang', '-O3', '-march=native']
+    cmd += common_polybench_args
+    cmd += ['-mllvm', '-polly',
            '-mllvm', '-polly-pattern-matching-based-opts=true',
            '-o', os.path.join(tmp_dir, 'a.out')]
     if parallel:
@@ -78,8 +81,7 @@ def benchmark_xla(benchmark, parallel, validate=False):
             'xla/examples/polybench:%s' % benchmark.name,
             '--nocheck_visibility',
             '--test_output=all',
-            '--config=avx_linux',
-            '--define=tensorflow_mkldnn_contraction_kernel=1',
+            '--config=avx2_linux', '--config=mkl',
             '--verbose_failures']
     assert run_program(cmd)[2] == 0
 
@@ -92,6 +94,15 @@ def benchmark_xla(benchmark, parallel, validate=False):
     out, err, ret = run_program(cmd)
 
     return out, err
+
+
+def median_of_n(fn, args, n=5):
+    times = []
+    for i in range(n):
+        times.append(float(fn(*args)[0]))
+
+    times_sorted = sorted(times)
+    return times_sorted[n // 2]
 
 
 Benchmark = collections.namedtuple(
@@ -144,16 +155,16 @@ def main():
         print('Benchmarking %s' % benchmark.name)
 
         # Time.
-        time_O3 = float(benchmark_O3(benchmark, validate=False)[0])
+        time_O3 = median_of_n(benchmark_O3, (benchmark, False))
         print(time_O3)
-        time_polly = float(benchmark_polly(benchmark, parallel=False, validate=False)[0])
+        time_polly_seq = median_of_n(benchmark_polly, (benchmark, False, False))
+        print(time_polly_seq)
+        time_polly = median_of_n(benchmark_polly, (benchmark, True, False))
         print(time_polly)
-        time_polly_parallel = float(benchmark_polly(benchmark, parallel=True, validate=False)[0])
-        print(time_polly_parallel)
-        time_xla = float(benchmark_xla(benchmark, parallel=False, validate=False)[0])
+        time_xla_seq = median_of_n(benchmark_xla, (benchmark, False, False))
+        print(time_xla_seq)
+        time_xla = median_of_n(benchmark_xla, (benchmark, True, False))
         print(time_xla)
-        time_xla_parallel = float(benchmark_xla(benchmark, parallel=True, validate=False)[0])
-        print(time_xla_parallel)
 
         # # Validate.
         # out_validate_polly = get_array_dump(benchmark_polly(benchmark, validate=True)[1])
@@ -176,20 +187,20 @@ def main():
             'time': [time_O3]})])
         df = pd.concat([df, pd.DataFrame({
             'benchmark': [benchmark.name],
+            'compiler': ['polly-sequential'],
+            'time': [time_polly_seq]})])
+        df = pd.concat([df, pd.DataFrame({
+            'benchmark': [benchmark.name],
             'compiler': ['polly'],
             'time': [time_polly]})])
         df = pd.concat([df, pd.DataFrame({
             'benchmark': [benchmark.name],
-            'compiler': ['polly-parallel'],
-            'time': [time_polly_parallel]})])
+            'compiler': ['xla-sequential'],
+            'time': [time_xla_seq]})])
         df = pd.concat([df, pd.DataFrame({
             'benchmark': [benchmark.name],
             'compiler': ['xla'],
             'time': [time_xla]})])
-        df = pd.concat([df, pd.DataFrame({
-            'benchmark': [benchmark.name],
-            'compiler': ['xla-parallel'],
-            'time': [time_xla_parallel]})])
 
     df.to_csv(os.path.join(res_dir, 'results.csv'), index=False)
 
