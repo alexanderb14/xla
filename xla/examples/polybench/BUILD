@@ -22,6 +22,7 @@ cc_library(
             "syrk.h",
             "syr2k.h",
             "doitgen.h",
+            "covariance.h",
     ],
     visibility = ["//visibility:public"],
 )
@@ -154,6 +155,16 @@ xla_cc_binary(
 xla_cc_binary(
     name = "doitgen",
     srcs = ["doitgen.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":polybench_lib",
+        ":xla_compiler_lib",
+    ],
+)
+
+xla_cc_binary(
+    name = "covariance",
+    srcs = ["covariance.cc"],
     visibility = ["//visibility:public"],
     deps = [
         ":polybench_lib",
