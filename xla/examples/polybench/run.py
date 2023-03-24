@@ -17,7 +17,8 @@ common_polybench_args = [
     '-DPOLYBENCH_USE_SCALAR_LB',
     '-DLARGE_DATASET',
     '-DPOLYBENCH_TIME',
-    '-DDATA_TYPE_IS_FLOAT'
+    '-DDATA_TYPE_IS_FLOAT',
+    '-lm'
 ]
 
 
@@ -96,7 +97,7 @@ def benchmark_xla(benchmark, parallel, validate=False):
     return out, err
 
 
-def median_of_n(fn, args, n=5):
+def median_of_n(fn, args, n=10):
     times = []
     for i in range(n):
         times.append(float(fn(*args)[0]))
@@ -151,6 +152,14 @@ benchmarks = [
     Benchmark(
         'doitgen', ['-I%s/utilities' % polybench_dir], [
             '%s/linear-algebra/kernels/doitgen/doitgen.c' % polybench_dir,
+            '%s/utilities/polybench.c' % polybench_dir]),
+    Benchmark(
+        'covariance', ['-I%s/utilities' % polybench_dir], [
+            '%s/datamining/covariance/covariance.c' % polybench_dir,
+            '%s/utilities/polybench.c' % polybench_dir]),
+    Benchmark(
+        'correlation', ['-I%s/utilities' % polybench_dir], [
+            '%s/datamining/correlation/correlation.c' % polybench_dir,
             '%s/utilities/polybench.c' % polybench_dir]),
 ]
 
