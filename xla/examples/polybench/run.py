@@ -11,7 +11,6 @@ import tqdm
 import pandas as pd
 
 polybench_dir = '/devel/git/irSynth-eval/benchmarks/polybench-c-4.2.1-beta'
-res_dir = '/tmp/perf_results'
 tmp_dir = '/tmp/perf_results_tmp'
 common_polybench_args = [
     '-DPOLYBENCH_USE_SCALAR_LB',
@@ -164,7 +163,9 @@ benchmarks = [
 ]
 
 def main():
-    prepare_dir(res_dir)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--results', type=str, default='/tmp/results.csv')
+    args = parser.parse_args()
 
     df = pd.DataFrame(columns=['benchmark', 'compiler', 'time'])
 
@@ -219,7 +220,7 @@ def main():
             'compiler': ['xla'],
             'time': [time_xla]})])
 
-    df.to_csv(os.path.join(res_dir, 'results.csv'), index=False)
+    df.to_csv(args.results, index=False)
 
 if __name__ == '__main__':
     main()
