@@ -24,6 +24,7 @@ cc_library(
             "doitgen.h",
             "covariance.h",
             "correlation.h",
+            "symm.h",
     ],
     visibility = ["//visibility:public"],
 )
@@ -176,6 +177,16 @@ xla_cc_binary(
 xla_cc_binary(
     name = "correlation",
     srcs = ["correlation.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":polybench_lib",
+        ":xla_compiler_lib",
+    ],
+)
+
+xla_cc_binary(
+    name = "symm",
+    srcs = ["symm.cc"],
     visibility = ["//visibility:public"],
     deps = [
         ":polybench_lib",
