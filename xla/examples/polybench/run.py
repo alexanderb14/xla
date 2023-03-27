@@ -160,6 +160,10 @@ benchmarks = [
         'correlation', ['-I%s/utilities' % polybench_dir], [
             '%s/datamining/correlation/correlation.c' % polybench_dir,
             '%s/utilities/polybench.c' % polybench_dir]),
+    Benchmark(
+        'symm', ['-I%s/utilities' % polybench_dir], [
+            '%s/linear-algebra/symm/symm.c' % polybench_dir,
+            '%s/utilities/polybench.c' % polybench_dir]),
 ]
 
 def main():
