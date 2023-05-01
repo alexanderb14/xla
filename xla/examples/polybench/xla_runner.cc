@@ -158,13 +158,13 @@ int main(int argc, char** argv) {
     if (shape.size() == 0) {
       buffer = buildBufferFromScalar(client, 1.234);
     } else if (shape.size() == 1) {
-      auto arr = xla::Array<float>({shape[0]});
+      auto arr = xla::Array<DATA_TYPE>({shape[0]});
       buffer = buildBuffer1D(client, arr);
     } else if (shape.size() == 2) {
-      auto arr = xla::Array2D<float>(shape[0], shape[1]);
+      auto arr = xla::Array2D<DATA_TYPE>(shape[0], shape[1]);
       buffer = buildBuffer2D(client, arr);
     } else if (shape.size() == 3) {
-      auto arr = xla::Array3D<float>(shape[0], shape[1], shape[2]);
+      auto arr = xla::Array3D<DATA_TYPE>(shape[0], shape[1], shape[2]);
       buffer = buildBuffer3D(client, arr);
     } else {
       std::cerr << "Unsupported shape size: " << shape.size() << std::endl;
