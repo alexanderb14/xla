@@ -193,3 +193,13 @@ xla_cc_binary(
         ":xla_compiler_lib",
     ],
 )
+
+xla_cc_binary(
+    name = "xla_runner",
+    srcs = ["xla_runner.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":polybench_lib",
+        ":xla_compiler_lib",
+    ],
+)
