@@ -124,18 +124,26 @@ int main(int argc, char** argv) {
     std::cout << "Usage: " << argv[0] << " <mlir file>\n";
     return 1;
   }
-  std::string program_path = argv[1];
+  std::string program_file = argv[1];
+
+  std::string program_string;
+
+  if (program_file == "-") {
+    // Read program from stdin.
+    std::string line;
+    while (std::getline(std::cin, line)) {
+      program_string += line + "\n";
+    }
+  } else {
+    // Read program from file.
+    auto readStatus =
+        tsl::ReadFileToString(tsl::Env::Default(), program_file, &program_string);
+    assert(readStatus.ok());
+    std::cerr << "Loaded program from " << program_file << ":\n"
+              << program_string << std::endl;
+  }
 
   auto client = buildJITClient();
-
-  // Read StableHLO program to string.
-  std::string program_string;
-  auto readStatus =
-      tsl::ReadFileToString(tsl::Env::Default(), program_path, &program_string);
-  assert(readStatus.ok());
-
-  std::cerr << "Loaded StableHLO program from " << program_path << ":\n"
-            << program_string << std::endl;
 
   // Register MLIR dialects necessary to parse our program. In our case this is
   // just the Func dialect and StableHLO.
