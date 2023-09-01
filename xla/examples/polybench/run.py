@@ -22,7 +22,7 @@ common_polybench_args = [
 
 
 def run_program(x):
-    print(' '.join(x))
+    # print(' '.join(x))
     p = subprocess.run(x, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE)
     return p.stdout.decode('utf-8'), p.stderr.decode('utf-8'), p.returncode
@@ -185,10 +185,12 @@ def main():
         print(times_polly_seq)
         times_polly = run_n(df, benchmark_polly, (benchmark, True, False))
         print(times_polly)
-        times_xla_seq = run_n(df, benchmark_xla, (benchmark, False, False))
-        print(times_xla_seq)
-        times_xla = run_n(df, benchmark_xla, (benchmark, True, False))
-        print(times_xla)
+
+        if benchmark.name != 'trmm':
+            times_xla_seq = run_n(df, benchmark_xla, (benchmark, False, False))
+            print(times_xla_seq)
+            times_xla = run_n(df, benchmark_xla, (benchmark, True, False))
+            print(times_xla)
 
         # # Validate.
         # out_validate_polly = get_array_dump(benchmark_polly(benchmark, validate=True)[1])
