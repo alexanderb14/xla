@@ -22,7 +22,7 @@ common_polybench_args = [
 
 
 def run_program(x):
-    # print(' '.join(x))
+    print(' '.join(x))
     p = subprocess.run(x, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE)
     return p.stdout.decode('utf-8'), p.stderr.decode('utf-8'), p.returncode
@@ -160,7 +160,7 @@ benchmarks = [
             '%s/utilities/polybench.c' % polybench_dir]),
     Benchmark(
         'symm', ['-I%s/utilities' % polybench_dir], [
-            '%s/linear-algebra/symm/symm.c' % polybench_dir,
+            '%s/linear-algebra/blas/symm/symm.c' % polybench_dir,
             '%s/utilities/polybench.c' % polybench_dir]),
     Benchmark(
         'trmm', ['-I%s/utilities' % polybench_dir], [
