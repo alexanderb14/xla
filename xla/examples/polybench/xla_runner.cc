@@ -72,6 +72,18 @@ std::unique_ptr<PjRtBuffer> buildBuffer3D(
   return x;
 }
 
+std::unique_ptr<PjRtBuffer> buildBuffer4D(
+    std::shared_ptr<PjRtStreamExecutorClient> client,
+    xla::Array4D<DATA_TYPE>& arr) {
+  PjRtDevice* cpu = client->devices()[0];
+  auto x_literal = xla::LiteralUtil::CreateR4FromArray4D<DATA_TYPE>(arr);
+  std::unique_ptr<PjRtBuffer> x =
+      client->BufferFromHostLiteral(x_literal, cpu).value();
+  auto sx = x->BlockHostUntilReady();
+
+  return x;
+}
+
 std::shared_ptr<PjRtStreamExecutorClient> buildJITClient() {
   // Setup client
   // LocalClient* local_client = xla::ClientLibrary::LocalClientOrDie();
@@ -174,6 +186,9 @@ int main(int argc, char** argv) {
     } else if (shape.size() == 3) {
       auto arr = xla::Array3D<DATA_TYPE>(shape[0], shape[1], shape[2]);
       buffer = buildBuffer3D(client, arr);
+    } else if (shape.size() == 4) {
+      auto arr = xla::Array4D<DATA_TYPE>(shape[0], shape[1], shape[2], shape[3]);
+      buffer = buildBuffer4D(client, arr);
     } else {
       std::cerr << "Unsupported shape size: " << shape.size() << std::endl;
       exit(1);
