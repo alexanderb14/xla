@@ -162,6 +162,10 @@ benchmarks = [
         'symm', ['-I%s/utilities' % polybench_dir], [
             '%s/linear-algebra/symm/symm.c' % polybench_dir,
             '%s/utilities/polybench.c' % polybench_dir]),
+    Benchmark(
+        'trmm', ['-I%s/utilities' % polybench_dir], [
+            '%s/linear-algebra/blas/trmm/trmm.c' % polybench_dir,
+            '%s/utilities/polybench.c' % polybench_dir]),
 ]
 
 def main():
