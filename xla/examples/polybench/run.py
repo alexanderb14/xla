@@ -96,13 +96,11 @@ def benchmark_xla(benchmark, parallel, validate=False):
     return out, err
 
 
-def median_of_n(fn, args, n=10):
+def run_n(df, fn, args, n=10):
     times = []
     for i in range(n):
         times.append(float(fn(*args)[0]))
-
-    times_sorted = sorted(times)
-    return times_sorted[n // 2]
+    return times
 
 
 Benchmark = collections.namedtuple(
@@ -177,16 +175,16 @@ def main():
         print('Benchmarking %s' % benchmark.name)
 
         # Time.
-        time_O3 = median_of_n(benchmark_O3, (benchmark, False))
-        print(time_O3)
-        time_polly_seq = median_of_n(benchmark_polly, (benchmark, False, False))
-        print(time_polly_seq)
-        time_polly = median_of_n(benchmark_polly, (benchmark, True, False))
-        print(time_polly)
-        time_xla_seq = median_of_n(benchmark_xla, (benchmark, False, False))
-        print(time_xla_seq)
-        time_xla = median_of_n(benchmark_xla, (benchmark, True, False))
-        print(time_xla)
+        times_O3 = run_n(df, benchmark_O3, (benchmark, False))
+        print(times_O3)
+        times_polly_seq = run_n(df, benchmark_polly, (benchmark, False, False))
+        print(times_polly_seq)
+        times_polly = run_n(df, benchmark_polly, (benchmark, True, False))
+        print(times_polly)
+        times_xla_seq = run_n(df, benchmark_xla, (benchmark, False, False))
+        print(times_xla_seq)
+        times_xla = run_n(df, benchmark_xla, (benchmark, True, False))
+        print(times_xla)
 
         # # Validate.
         # out_validate_polly = get_array_dump(benchmark_polly(benchmark, validate=True)[1])
@@ -203,26 +201,31 @@ def main():
         #     f.write(out_validate_xla)
 
         # Write results to dataframe.
-        df = pd.concat([df, pd.DataFrame({
-            'benchmark': [benchmark.name],
-            'compiler': ['llvm-O3'],
-            'time': [time_O3]})])
-        df = pd.concat([df, pd.DataFrame({
-            'benchmark': [benchmark.name],
-            'compiler': ['polly-sequential'],
-            'time': [time_polly_seq]})])
-        df = pd.concat([df, pd.DataFrame({
-            'benchmark': [benchmark.name],
-            'compiler': ['polly'],
-            'time': [time_polly]})])
-        df = pd.concat([df, pd.DataFrame({
-            'benchmark': [benchmark.name],
-            'compiler': ['xla-sequential'],
-            'time': [time_xla_seq]})])
-        df = pd.concat([df, pd.DataFrame({
-            'benchmark': [benchmark.name],
-            'compiler': ['xla'],
-            'time': [time_xla]})])
+        for time_O3 in times_O3:
+            df = pd.concat([df, pd.DataFrame({
+                'benchmark': [benchmark.name],
+                'compiler': ['llvm-O3'],
+                'time': [time_O3]})])
+        for time_polly_seq in times_polly_seq:
+            df = pd.concat([df, pd.DataFrame({
+                'benchmark': [benchmark.name],
+                'compiler': ['polly-sequential'],
+                'time': [time_polly_seq]})])
+        for time_polly in times_polly:
+            df = pd.concat([df, pd.DataFrame({
+                'benchmark': [benchmark.name],
+                'compiler': ['polly'],
+                'time': [time_polly]})])
+        for time_xla_seq in times_xla_seq:
+            df = pd.concat([df, pd.DataFrame({
+                'benchmark': [benchmark.name],
+                'compiler': ['xla-sequential'],
+                'time': [time_xla_seq]})])
+        for time_xla in times_xla:
+            df = pd.concat([df, pd.DataFrame({
+                'benchmark': [benchmark.name],
+                'compiler': ['xla'],
+                'time': [time_xla]})])
 
     df.to_csv(args.results, index=False)
 
