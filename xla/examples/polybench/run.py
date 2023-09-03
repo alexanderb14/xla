@@ -181,57 +181,44 @@ def main():
         # Time.
         times_O3 = run_n(df, benchmark_O3, (benchmark, False))
         print(times_O3)
-        times_polly_seq = run_n(df, benchmark_polly, (benchmark, False, False))
-        print(times_polly_seq)
-        times_polly = run_n(df, benchmark_polly, (benchmark, True, False))
-        print(times_polly)
-
-        if benchmark.name != 'trmm':
-            times_xla_seq = run_n(df, benchmark_xla, (benchmark, False, False))
-            print(times_xla_seq)
-            times_xla = run_n(df, benchmark_xla, (benchmark, True, False))
-            print(times_xla)
-
-        # # Validate.
-        # out_validate_polly = get_array_dump(benchmark_polly(benchmark, validate=True)[1])
-        # out_validate_xla = get_array_dump(benchmark_xla(benchmark, validate=True)[1])
-        # if out_validate_polly == out_validate_xla:
-        #     print('VALIDATION SUCCEEDED')
-        # else:
-        #     print('VALIDATION FAILED')
-
-        # # Write validation outputs to files.
-        # with open(os.path.join(res_dir, '%s_polly.txt' % benchmark.name), 'w') as f:
-        #     f.write(out_validate_polly)
-        # with open(os.path.join(res_dir, '%s_xla.txt' % benchmark.name), 'w') as f:
-        #     f.write(out_validate_xla)
-
-        # Write results to dataframe.
         for time_O3 in times_O3:
             df = pd.concat([df, pd.DataFrame({
                 'benchmark': [benchmark.name],
                 'compiler': ['llvm-O3'],
                 'time': [time_O3]})])
+
+        times_polly_seq = run_n(df, benchmark_polly, (benchmark, False, False))
+        print(times_polly_seq)
         for time_polly_seq in times_polly_seq:
             df = pd.concat([df, pd.DataFrame({
                 'benchmark': [benchmark.name],
                 'compiler': ['polly-sequential'],
                 'time': [time_polly_seq]})])
+
+        times_polly = run_n(df, benchmark_polly, (benchmark, True, False))
+        print(times_polly)
         for time_polly in times_polly:
             df = pd.concat([df, pd.DataFrame({
                 'benchmark': [benchmark.name],
                 'compiler': ['polly'],
                 'time': [time_polly]})])
-        for time_xla_seq in times_xla_seq:
-            df = pd.concat([df, pd.DataFrame({
-                'benchmark': [benchmark.name],
-                'compiler': ['xla-sequential'],
-                'time': [time_xla_seq]})])
-        for time_xla in times_xla:
-            df = pd.concat([df, pd.DataFrame({
-                'benchmark': [benchmark.name],
-                'compiler': ['xla'],
-                'time': [time_xla]})])
+
+        if benchmark.name != 'trmm':
+            times_xla_seq = run_n(df, benchmark_xla, (benchmark, False, False))
+            print(times_xla_seq)
+            for time_xla_seq in times_xla_seq:
+                df = pd.concat([df, pd.DataFrame({
+                    'benchmark': [benchmark.name],
+                    'compiler': ['xla-sequential'],
+                    'time': [time_xla_seq]})])
+
+            times_xla = run_n(df, benchmark_xla, (benchmark, True, False))
+            print(times_xla)
+            for time_xla in times_xla:
+                df = pd.concat([df, pd.DataFrame({
+                    'benchmark': [benchmark.name],
+                    'compiler': ['xla'],
+                    'time': [time_xla]})])
 
     df.to_csv(args.results, index=False)
 
